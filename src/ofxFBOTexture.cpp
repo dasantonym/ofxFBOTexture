@@ -130,10 +130,10 @@ void ofxFBOTexture::allocate(int w, int h, int internalGlDataType, int numSample
     texData.width = w;
     texData.height = h;
     texData.bFlipTexture = true;
-    texData.glTypeInternal = internalGlDataType;
+    texData.glInternalFormat = internalGlDataType;
     
 #ifndef TARGET_OPENGLES
-    switch(texData.glTypeInternal) {
+    switch(texData.glInternalFormat) {
         case GL_RGBA32F_ARB:
         case GL_RGBA16F_ARB:
             //texData.glType		= GL_RGBA;
@@ -160,7 +160,7 @@ void ofxFBOTexture::allocate(int w, int h, int internalGlDataType, int numSample
     glTexParameterf(texData.textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameterf(texData.textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(texData.textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(texData.textureTarget, 0, texData.glTypeInternal, texData.tex_w, texData.tex_h, 0, texData.glTypeInternal, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(texData.textureTarget, 0, texData.glInternalFormat, texData.tex_w, texData.tex_h, 0, texData.glInternalFormat, GL_UNSIGNED_BYTE, 0);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     
     
@@ -178,7 +178,7 @@ void ofxFBOTexture::allocate(int w, int h, int internalGlDataType, int numSample
         //THEO multi sampled color buffer
         glGenRenderbuffersEXT(1, &colorBuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, colorBuffer);
-        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, numSamples, texData.glTypeInternal, texData.tex_w, texData.tex_h);
+        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, numSamples, texData.glInternalFormat, texData.tex_w, texData.tex_h);
         
         //THEO create fbo for multi sampled content and attach depth and color buffers to it
         glGenFramebuffersEXT(1, &mfbo);
@@ -366,7 +366,7 @@ void ofxFBOTexture::swapOut() {
 
 void ofxFBOTexture::clean() {
 #ifndef TARGET_OPENGLES
-    switch(texData.glTypeInternal) {
+    switch(texData.glInternalFormat) {
         case GL_RGBA32F_ARB:
         case GL_RGBA16F_ARB:
             //texData.glType		= GL_RGBA;
@@ -424,7 +424,7 @@ void ofxFBOTexture::clear(float r, float g, float b, float a) {
 }
 
 void ofxFBOTexture::bindAsTexture(){
-    glBindTexture(GL_TEXTURE_2D, (GLuint)&texData.textureID);
+    glBindTexture(GL_TEXTURE_2D, texData.textureID);
 }
 
 void ofxFBOTexture::begin() {
@@ -444,7 +444,7 @@ void *ofxFBOTexture::getPixels() {
     bReading = true;
     if(!alreadyIn) begin();			// if it isn't bound, bind it
     glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-    glReadPixels(0, 0, texData.width, texData.height, texData.glTypeInternal, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0, 0, texData.width, texData.height, texData.glInternalFormat, GL_UNSIGNED_BYTE, pixels);
     if(!alreadyIn) end();  // if fbo wasn't bound when the function was called, unbind it
     bReading = false;
     return pixels;
@@ -501,8 +501,8 @@ void ofxFBOTexture::saveImage(string fileName){
     
     //glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
     //glReadPixels(0, 0, texData.width, texData.height, texData.glType, GL_UNSIGNED_BYTE, imageSaver.getPixels());
-    imageSaver.grabScreen(0, 0, imageSaver.width, imageSaver.height);
-    imageSaver.saveImage(fileName);
+    imageSaver.grabScreen(0, 0, (uint16_t)imageSaver.getWidth(), (uint16_t)imageSaver.getHeight());
+    imageSaver.save(fileName);
     
     if(!alreadyIn) end();
 }
@@ -513,7 +513,7 @@ void ofxFBOTexture::saveImageThreaded(string fileName){
     
     //glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
     //glReadPixels(0, 0, texData.width, texData.height, texData.glType, GL_UNSIGNED_BYTE, imageSaver.getPixels());
-    imageSaver.grabScreen(0, 0, imageSaver.width, imageSaver.height);
+    imageSaver.grabScreen(0, 0, (uint16_t)imageSaver.getWidth(), (uint16_t)imageSaver.getHeight());
     imageSaver.saveThreaded(fileName);
     
     if(!alreadyIn) end();
