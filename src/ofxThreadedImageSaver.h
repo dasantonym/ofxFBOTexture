@@ -7,7 +7,7 @@ public:
     
     void threadedFunction() {
         if(lock()) {
-            saveImage(fileName);
+            save(fileName);
             unlock();
         } else {
             printf("ofxThreadedImageSaver - cannot save %s cos I'm locked", fileName.c_str());
